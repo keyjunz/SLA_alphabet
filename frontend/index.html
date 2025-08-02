@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign-Talk | Trình dịch Ngôn ngữ ký hiệu</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512' fill='%2300A8FF'%3E%3Cpath d='M432.8 320.1c-14.7-6.5-28.7-14.9-42-25.2L256.4 128.5c-4-3.1-9.4-4.2-14.3-2.8L128 160H16c-8.8 0-16 7.2-16 16s7.2 16 16 16h81.2l58.1 14.5c4.9 1.2 9.2-2.1 10.3-6.9l.4-1.8c2-8.3 10.3-13.4 18.3-10.3l11.4 4.3c5.4 2 8.3 8 6.5 13.5l-1.8 5.6c-1.8 5.5.4 11.6 5.8 14.8l20.8 12.1c6.5 3.8 14.3 3.1 20-1.7l16.2-13.5c5.3-4.4 12.8-4.4 18.1 0l16.2 13.5c5.7 4.8 13.5 5.5 20 1.7l20.8-12.1c5.4-3.1 7.6-9.3 5.8-14.8l-1.8-5.6c-1.8-5.5 1.1-11.5 6.5-13.5l11.4-4.3c8-3.1 16.3 2 18.3 10.3l.4 1.8c1.1 4.8 5.4 8.1 10.3 6.9l58.1-14.5H560c8.8 0 16-7.2 16-16s-7.2-16-16-16H479.2l-22.1-34.9c-5-7.8-14.8-11.4-24.3-8.8s-16.4 10.8-16.4 20.4V320.1zM576 192c0-35.3-28.7-64-64-64H416c-35.3 0-64 28.7-64 64s28.7 64 64 64h96c35.3 0 64-28.7 64-64zM240 64c0-35.3-28.7-64-64-64S112 28.7 112 64s28.7 64 64 64s64-28.7 64-64z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><i class="fas fa-hand-holding-heart"></i></div>
+                <div class="logo-text">Sign-Talk</div>
+            </div>
+            <div class="history-container">
+                <h2 class="history-title">Lịch sử</h2>
+                <ul id="history-list"></ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="grid-container">
+                <header class="grid-header">
+                    Sign-Talk AI Gemini
+                </header>
+                
+                <div id="video-card" class="card">
+                    <canvas id="main-canvas"></canvas>
+                </div>
+
+                <div id="output-card" class="card">
+                    <h2>Chữ đang nhận diện</h2>
+                    <p id="sentence-display"> </p>
+                </div>
+
+                <div id="result-card" class="card">
+                    <div class="result-split-container">
+                        <div class="result-column result-original-col">
+                            <h2>KẾT QUẢ GỐC</h2>
+                            <p id="raw-sentence-output">...</p>
+                        </div>
+                        <div class="result-separator"></div>
+                        <div class="result-column result-gemini-col">
+                            <h2>GEMINI TINH CHỈNH 🔊<br><audio id="tts-audio" controls style="margin-top: 8px; width: 100%;"></audio></h2>
+                            <p id="final-result-display">...</p>
+                        </div>
+                    </div>
+                    <button id="copy-btn" title="Sao chép kết quả đã tinh chỉnh"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="grid-controls">
+                    <button id="start-btn" class="btn btn-start"><i class="fas fa-play"></i> Bắt đầu</button>
+                    <button id="stop-btn" class="btn btn-stop" disabled><i class="fas fa-stop"></i> Kết thúc</button>
+                    <select id="language-select" title="Chọn ngôn ngữ để dịch">
+                        <option value="Vietnamese">Tiếng Việt (Sửa lỗi)</option>
+                        <option value="English">Dịch sang Tiếng Anh</option>
+                        <option value="Japanese">Dịch sang Tiếng Nhật</option>
+                        <option value="French">Dịch sang Tiếng Pháp</option>
+                        <option value="Korean">Dịch sang Tiếng Hàn</option>
+                    </select>
+                </div>
+                
+                <footer class="grid-footer">
+                    "Ngôn ngữ ký hiệu là cây cầu nối liền thế giới của sự im lặng và âm thanh."
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <video id="webcam" muted playsinline style="display: none;"></video>
+    <canvas id="canvas-hidden" style="display: none;"></canvas>
+
+    <script>
+        const startBtn = document.getElementById("start-btn");
+        const stopBtn = document.getElementById("stop-btn");
+        const videoElement = document.getElementById("webcam");
+        const mainCanvas = document.getElementById("main-canvas");
+        const mainContext = mainCanvas.getContext("2d");
+        const canvasHidden = document.getElementById("canvas-hidden");
+        const hiddenContext = canvasHidden.getContext("2d");
+        const sentenceDisplay = document.getElementById("sentence-display");
+        const statusDisplay = document.querySelector(".grid-footer");
+
+        const rawSentenceOutput = document.getElementById("raw-sentence-output");
+        const finalResultDisplay = document.getElementById("final-result-display");
+        const languageSelect = document.getElementById("language-select");
+        const copyBtn = document.getElementById("copy-btn");
+        const historyList = document.getElementById("history-list");
+
+        const WS_URL = "ws://localhost:8000/api/ws/recognize";
+        const API_URL = "http://localhost:8000/api/process-sentence";
+        const FPS = 10;
+        let socket = null, intervalId = null, stream = null, recognitionHistory = [];
+
+        const loadHistory = () => {
+            const saved = localStorage.getItem("signLanguageHistory");
+            if (saved) {
+                recognitionHistory = JSON.parse(saved);
+                renderHistory();
+            }
+        };
+
+        const saveHistory = () => localStorage.setItem("signLanguageHistory", JSON.stringify(recognitionHistory));
+
+        const renderHistory = () => {
+            historyList.innerHTML = "";
+            recognitionHistory.forEach(item => {
+                const li = document.createElement("li");
+                li.className = "history-item";
+                li.textContent = item;
+                historyList.prepend(li);
+            });
+        };
+
+        const connectWebSocket = () => {
+            statusDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kết nối...';
+            socket = new WebSocket(WS_URL);
+
+            socket.onopen = () => {
+                statusDisplay.innerHTML = '<i class="fas fa-check-circle"></i> Đã kết nối. Bắt đầu nhận dạng...';
+                intervalId = setInterval(sendFrame, 1000 / FPS);
+            };
+
+            socket.onmessage = event => {
+                const data = JSON.parse(event.data);
+                if (data.video_frame) {
+                    const img = new Image();
+                    img.src = data.video_frame;
+                    img.onload = () => mainContext.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
+                }
+                if (typeof data.sentence !== 'undefined') {
+                    sentenceDisplay.innerHTML = `${data.sentence}<span class="blinking-cursor">▌</span>`;
+                }
+            };
+
+            socket.onclose = () => {
+                statusDisplay.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Mất kết nối';
+                stopRecognition(false);
+            };
+            socket.onerror = () => statusDisplay.innerHTML = '<i class="fas fa-times-circle"></i> Lỗi kết nối';
+        };
+
+        const startRecognition = async () => {
+            startBtn.disabled = true;
+            statusDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mở camera...';
+            
+            rawSentenceOutput.textContent = "...";
+            finalResultDisplay.textContent = "...";
+            copyBtn.style.opacity = "0";
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+                videoElement.srcObject = stream;
+                videoElement.onloadedmetadata = () => {
+                    videoElement.play();
+                    mainCanvas.width = videoElement.videoWidth;
+                    mainCanvas.height = videoElement.videoHeight;
+                    connectWebSocket();
+                    stopBtn.disabled = false;
+                    sentenceDisplay.innerHTML = '<span class="blinking-cursor">▌</span>';
+                };
+            } catch (err) {
+                statusDisplay.innerHTML = '<i class="fas fa-exclamation-circle"></i> Không thể mở camera';
+                startBtn.disabled = false;
+            }
+        };
+
+        const stopRecognition = (processResult = true) => {
+            if (intervalId) clearInterval(intervalId);
+            if (socket) socket.close();
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            intervalId = socket = stream = null;
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            drawInitialCanvas();
+            const rawSentence = sentenceDisplay.textContent.replace("▌", "").trim();
+            sentenceDisplay.innerHTML = " ";
+
+            if (processResult && rawSentence !== "") {
+                rawSentenceOutput.textContent = rawSentence;
+                
+                const targetLanguage = languageSelect.value;
+                finalResultDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ raw_sentence: rawSentence, target_language: targetLanguage })
+                })
+                .then(response => response.ok ? response.json() : Promise.reject(`Lỗi server: ${response.statusText}`))
+                .then(data => {
+                    finalResultDisplay.textContent = data.translated_sentence;
+                    copyBtn.style.opacity = "1";
+                    
+                    if (data.translated_sentence) {
+                        recognitionHistory.push(data.translated_sentence);
+                        saveHistory();
+                        renderHistory();
+                    }
+                })
+                .catch(err => {
+                    finalResultDisplay.textContent = "Lỗi xử lý";
+                    console.error("Lỗi khi gọi API:", err);
+                })
+                .finally(() => {
+                    statusDisplay.innerHTML = '"Ngôn ngữ ký hiệu là cây cầu nối liền thế giới của sự im lặng và âm thanh."';
+                });
+            } else {
+                rawSentenceOutput.textContent = "...";
+                finalResultDisplay.textContent = "...";
+                statusDisplay.innerHTML = '"Ngôn ngữ ký hiệu là cây cầu nối liền thế giới của sự im lặng và âm thanh."';
+            }
+        };
+
+        const getFrameAsBase64 = () => {
+            hiddenContext.canvas.width = videoElement.videoWidth;
+            hiddenContext.canvas.height = videoElement.videoHeight;
+            hiddenContext.save();
+            hiddenContext.scale(-1, 1);
+            hiddenContext.translate(-hiddenContext.canvas.width, 0);
+            hiddenContext.drawImage(videoElement, 0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
+            hiddenContext.restore();
+            return hiddenContext.canvas.toDataURL("image/jpeg", 0.85);
+        };
+
+        const sendFrame = () => {
+            if (socket && socket.readyState === WebSocket.OPEN && videoElement.readyState >= 3) {
+                socket.send(getFrameAsBase64());
+            }
+        };
+
+        const drawInitialCanvas = () => {
+            mainContext.fillStyle = "#000";
+            mainContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+        };
+        
+        const copyResult = () => {
+            const textToCopy = finalResultDisplay.textContent;
+            if (textToCopy && !textToCopy.includes('...')) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
+                });
+            }
+        };
+
+        window.addEventListener("load", () => {
+            loadHistory();
+            drawInitialCanvas();
+            rawSentenceOutput.textContent = "...";
+            finalResultDisplay.textContent = "...";
+            copyBtn.style.opacity = "0";
+        });
+
+        startBtn.addEventListener("click", startRecognition);
+        stopBtn.addEventListener("click", () => stopRecognition(true));
+        copyBtn.addEventListener("click", copyResult);
+    </script>
+
+<!-- Bắt đầu chèn mới -->
+<div class="translation-widget" style="margin: 1rem;">
+    <label for="lang-select" style="font-weight: bold;">Chọn ngôn ngữ dịch:</label>
+    <select id="lang-select">
+        <option value="en">🇺🇸 English</option>
+        <option value="vi">🇻🇳 Tiếng Việt</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="ko">🇰🇷 한국어</option>
+    </select>
+    <button id="translate-speak-btn">Dịch & Phát âm</button>
+    <div style="margin-top: 1rem;">
+        <p><strong>✅ Đã sửa lỗi:</strong> <span id="corrected-text"></span></p>
+        <p><strong>🌍 Bản dịch:</strong> <span id="translated-text"></span></p>
+        <audio id="tts-audio" controls style="margin-top: 0.5rem;"></audio>
+    </div>
+</div>
+<!-- Kết thúc chèn mới -->
+
+<!-- PHẦN DỊCH & GIỌNG NÓI -->
+<div class="translation-widget" style="text-align:center; margin-top: 20px;">
+    <label for="lang-select"><strong>Ngôn ngữ:</strong></label>
+    <select id="lang-select">
+        <option value="vi">🇻🇳 Tiếng Việt</option>
+        <option value="en">🇺🇸 English</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="ko">🇰🇷 한국어</option>
+    </select>
+    <button id="translate-speak-btn">Dịch & Phát âm</button>
+
+    <div style="margin-top: 1rem;">
+        <p><strong>✅ Đã sửa lỗi:</strong> <span id="corrected-text"></span></p>
+        <p><strong>🌍 Bản dịch:</strong> <span id="translated-text"></span></p>
+        <audio id="tts-audio" controls style="margin-top: 0.5rem;"></audio>
+    </div>
+</div>
+<!-- HẾT PHẦN DỊCH -->
+</body>
+
+
+</html>

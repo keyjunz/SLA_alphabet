@@ -1,0 +1,189 @@
+/* Tệp: style.css - Phiên bản cuối cùng */
+
+:root {
+    --bg-sidebar: rgba(13, 13, 13, 0.9);
+    --text-primary: #F0F0F0;
+    --text-secondary: #A0A0A0;
+    --accent-color: #00A8FF;
+    --stop-color: #FF5B5B;
+    --border-radius-lg: 24px;
+    --border-radius-md: 12px;
+    --card-bg: rgba(37, 37, 42, 0.75);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    background-image: url('../images/background2.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.app-container { display: flex; width: 100%; height: 100%; }
+
+.sidebar {
+    width: 260px;
+    background-color: var(--bg-sidebar);
+    backdrop-filter: blur(15px);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--card-border);
+}
+
+.sidebar-header { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.5rem; }
+.logo {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.5);
+}
+.logo-text { font-size: 1.25rem; font-weight: 600; }
+.history-container { flex-grow: 1; overflow-y: auto; }
+.history-container::-webkit-scrollbar { width: 4px; }
+.history-container::-webkit-scrollbar-thumb { background-color: #4a4a4a; border-radius: 2px; }
+.history-title { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); padding: 0.75rem 0.5rem; text-transform: uppercase; }
+#history-list { list-style: none; }
+.history-item { padding: 0.9rem; border-radius: 6px; margin-bottom: 0.25rem; cursor: pointer; font-size: 0.875rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background-color 0.2s ease; }
+.history-item:hover { background-color: #252525; }
+
+.main-content { flex-grow: 1; padding: 2rem; display: flex; align-items: center; justify-content: center; }
+
+.grid-container {
+    width: 100%;
+    max-width: 1100px;
+    height: 90vh;
+    max-height: 800px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 1.5rem;
+    grid-template-areas: "header   header" "video   output" "result   result" "controls controls" "footer   footer";
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-header { grid-area: header; justify-self: start; align-self: center; font-size: 2.25rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(90deg, var(--accent-color), #A038FF); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
+#video-card { grid-area: video; padding: 0; overflow: hidden; }
+#output-card { grid-area: output; }
+.grid-controls { grid-area: controls; display: flex; justify-content: center; align-items: center; gap: 1rem; }
+.grid-footer { grid-area: footer; text-align: center; color: var(--text-secondary); font-style: italic; font-size: 0.95rem; text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7); padding-top: 0.5rem; animation: fadeInUp 1.2s ease-out 0.5s forwards; opacity: 0; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+#main-canvas { width: 100%; height: 100%; object-fit: cover; background: #000; }
+.card h2 { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1rem; }
+#sentence-display { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; text-align: center; font-weight: 500; }
+.blinking-cursor { animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.btn { padding: 0.75rem 2rem; border: none; border-radius: var(--border-radius-md); font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; color: white; transition: all 0.25s ease; }
+.btn-start { background-color: var(--accent-color); }
+.btn-stop { background-color: var(--stop-color); }
+.btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#language-select {
+    padding: 0.75rem 1.5rem; border-radius: var(--border-radius-md); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; background-color: var(--card-bg); color: var(--text-primary); border: 1px solid var(--card-border); -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23A0A0A0' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center;
+}
+#language-select:hover { border-color: var(--accent-color); }
+#language-select:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-color); }
+
+/* 
+============================================================
+=== CSS MỚI CHO BỐ CỤC KẾT QUẢ CHIA ĐÔI ===
+============================================================
+*/
+
+#result-card {
+    padding: 0;
+    position: relative;
+}
+
+.result-split-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.result-column {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Canh trên cùng */
+    overflow: hidden;
+}
+
+.result-column h2 {
+    margin-bottom: 1.5rem; /* Tăng khoảng cách dưới tiêu đề */
+}
+
+.result-separator {
+    width: 1px;
+    background-color: var(--card-border);
+    height: 70%;
+    align-self: center;
+}
+
+.result-column p {
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text-primary);
+    word-wrap: break-word;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+}
+
+.result-gemini-col p {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+#copy-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+#copy-btn:hover { background: var(--accent-color); color: white; }
+
+#final-result-display .fa-spinner {
+    font-size: 1.75rem;
+    color: var(--text-secondary);
+}
