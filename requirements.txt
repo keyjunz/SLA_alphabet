@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+tensorflow
+opencv-python-headless
+numpy
+python-multipart
+aiofiles
+mediapipe
+google.generativeai
+gtts
