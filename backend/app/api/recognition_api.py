@@ -15,7 +15,7 @@ from gtts import gTTS
 
 try:
     
-    MY_API_KEY = "AIzaSyAnjnZYp1YohxUL2OhNslSdBeGu6-baRuk" 
+    MY_API_KEY = "your_api_key_here" 
     
     genai.configure(api_key=MY_API_KEY)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
